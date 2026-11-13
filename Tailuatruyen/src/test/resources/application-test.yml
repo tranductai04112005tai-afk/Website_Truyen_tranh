@@ -1,0 +1,33 @@
+# Cấu hình riêng cho môi trường Test: dùng H2 in-memory thay vì MySQL thật (Giai đoạn 10),
+# để chạy được integration test ở bất kỳ máy nào (CI/CD) mà không cần cài MySQL.
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    defer-datasource-initialization: false
+  sql:
+    init:
+      mode: never # tắt data.sql khi test, mỗi test tự seed dữ liệu cần thiết
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: test-client-id
+            client-secret: test-client-secret
+
+jwt:
+  secret: NjCeC34OOVBhN0J++bBuPnN+eIbIGolUFJoKdTEfrNk6LV4p4+xEZMQcH5uMfGGp
+  expiration: 86400000
+
+app:
+  cors:
+    allowed-origins: http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173
+  security:
+    dev-login-enabled: true

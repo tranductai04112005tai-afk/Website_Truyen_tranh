@@ -1,0 +1,63 @@
+spring:
+  application:
+    name: tailuatruyen
+
+  web:
+    locale: vi_VN
+    locale-resolver: fixed
+  mvc:
+    log-resolved-exception: true
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  
+  # Cấu hình kết nối MySQL
+  datasource:
+    url: jdbc:mysql://localhost:3306/tailuatruyen_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+    username: root
+    password: abc123!@#
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # Cấu hình Hibernate (Tự động tạo bảng từ Entity)
+  jpa:
+    hibernate:
+      ddl-auto: update # Tự động cập nhật bảng khi code Entity thay đổi
+    show-sql: true # Hiển thị câu lệnh SQL ở console để dễ debug
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+    # Chạy data.sql SAU KHI Hibernate đã tạo xong bảng (vì ddl-auto=update tạo bảng lúc khởi động)
+    # Dùng để seed VipPackage + tài khoản Admin mặc định (Giai đoạn 1)
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: always
+
+  # Cấu hình Google OAuth2 (đọc từ biến môi trường, dễ dùng khi chạy thật trên máy local / server)
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:your-client-id-here}
+            client-secret: ${GOOGLE_CLIENT_SECRET:your-client-secret-here}
+
+# Cấu hình JWT (Nằm độc lập, ngang hàng với spring)
+# secret PHẢI là chuỗi Base64 hợp lệ vì JwtService dùng Decoders.BASE64 để giải mã (khoá cũ chứa dấu "_" sẽ làm app crash lúc sinh token)
+# Sinh khoá mới bằng: openssl rand -base64 48
+jwt:
+  secret: ${JWT_SECRET:NjCeC34OOVBhN0J++bBuPnN+eIbIGolUFJoKdTEfrNk6LV4p4+xEZMQcH5uMfGGp}
+  expiration: 86400000 # Thời hạn token: 1 ngày (tính bằng millisecond)
+
+# CORS: origin của Frontend ReactJS (đổi lại nếu domain thật khác)
+app:
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173}
+  security:
+    # BẬT endpoint /api/auth/dev-login để test bằng Postman mà không cần idToken Google thật.
+    # !!! BẮT BUỘC set false (hoặc override qua biến môi trường APP_SECURITY_DEV_LOGIN_ENABLED=false)
+    # trước khi deploy production, vì endpoint này cho phép tự cấp JWT với bất kỳ role nào.
+    dev-login-enabled: ${APP_SECURITY_DEV_LOGIN_ENABLED:true}
